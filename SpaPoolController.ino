@@ -31,12 +31,12 @@ byte debugMode = DEBUG_ON;
    GPIOd = INPUT = Water sensor
 
    Strapping pins, be careful using these as inputs as they affect boot behavior:
-   GPIO 0
+   GPIO 0   - goes weekly high on programming
    GPIO 2
    GPIO 4
    GPIO 5 (must be HIGH during boot)
    GPIO 12 (must be LOW during boot)
-   GPIO 15 (must be HIGH during boot)
+   GPIO 15 (must be HIGH during boot) - goes weekly high on boot
 
    The following go HI during boot. Be careful how they're used:
    GPIO 1
@@ -78,9 +78,9 @@ byte debugMode = DEBUG_ON;
 
 */
 
-#define JETPUMP_GPIO 0
-#define STATUS_GPIO 2
-#define HEATER_GPIO 15
+#define JETPUMP_GPIO 17
+#define STATUS_GPIO 2 
+#define HEATER_GPIO 16
 #define TEMPSENSOR_GPIO 36
 #define WATERSENSOR_GPIO 39
 

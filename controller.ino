@@ -11,6 +11,10 @@ void initIO()
   digitalWrite(HEATER_GPIO, LOW);
   pinMode(TEMPSENSOR_GPIO, INPUT);
   pinMode(WATERSENSOR_GPIO, INPUT);
+
+  //2600 mV. (1V input = ADC reading of 1575).
+  analogSetPinAttenuation(TEMPSENSOR_GPIO, ADC_11db);
+  
 }
 
 void controlLoop()
@@ -57,18 +61,18 @@ void setOutputs()
   }
   if (jetPumpState == 0)
   {
-    digitalWrite(JETPUMP_GPIO, HIGH);
+    digitalWrite(JETPUMP_GPIO, LOW);
   }
   else
   {
-    digitalWrite(JETPUMP_GPIO, LOW);
+    digitalWrite(JETPUMP_GPIO, HIGH);
   }
 }
 
 void readTemperature()
 {
   // default 0-3300mv = 0-4095
-  temperature = analogRead(36);
+  temperature = 0.05557 * analogReadMilliVolts(TEMPSENSOR_GPIO) -17.8;
 }
 
 bool readWaterSensor()

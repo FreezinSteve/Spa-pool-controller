@@ -306,7 +306,7 @@ String getStatus()
   response += "\", \"sp\": \"";
   response += setpoint;
   response += "\", \"ts\": \"";
-  response += "43200";  // getTimeTillAtSetpoint()
+  response += getTimeTillAtSetpoint();
   response += "\", \"cs\": \"";
   response += controllerState;
   response += "\", \"js\": \"";
@@ -318,6 +318,23 @@ String getStatus()
   response += "\"}";
   DBG(response);
   return response;
+}
+
+// Return time to get to temperature in minutes
+// Assume it takes 20hours to raise by 20 degrees as a starting point
+// 20 hrs = 1200 minutes
+String getTimeTillAtSetpoint()
+{
+    double diff = setpoint - temperature;
+    if (diff < 0)
+    {
+      return String("0");
+    }
+
+    // scaler = 1200 / 20  in minutes/deg
+    // scaler = 60
+    int minutes = (int)(60 * diff);
+    return String(minutes);
 }
 
 String getMemInfo()
