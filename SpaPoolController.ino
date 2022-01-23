@@ -19,68 +19,10 @@ byte debugMode = DEBUG_ON;
 //#define DBG(...) debugMode == DEBUG_ON ? Serial.println(__VA_ARGS__) : NULL
 #define DBG(...) Serial.println(__VA_ARGS__)
 
-/*
+#define JETPUMP_RELAY 0
+#define HEATER_RELAY 1
 
-   GPIO0 = OUTPUT = JETS PUMP
-   GPIO2 = OUTPUT = STATUS LED
-   GPIO15 = OUTPUT = HEATER
-
-   GPIOa = INPUT = PUMP ON/OFF (manual pump on/off toggle)
-   GPIOb = INPUT = HEATER ON/OFF (manual heater on/off toggle)
-   GPIOc = INPUT = Temperature sensor
-   GPIOd = INPUT = Water sensor
-
-   Strapping pins, be careful using these as inputs as they affect boot behavior:
-   GPIO 0   - goes weekly high on programming
-   GPIO 2
-   GPIO 4
-   GPIO 5 (must be HIGH during boot)
-   GPIO 12 (must be LOW during boot)
-   GPIO 15 (must be HIGH during boot) - goes weekly high on boot
-
-   The following go HI during boot. Be careful how they're used:
-   GPIO 1
-   GPIO 3
-   GPIO 5
-   GPIO 6 to GPIO 11 (connected to the ESP32 integrated SPI flash memory – not recommended to use).
-   GPIO 14
-   GPIO 15
-
-   Don't use, used for FLASH:
-   GPIO 6 (SCK/CLK)
-   GPIO 7 (SDO/SD0)
-   GPIO 8 (SDI/SD1)
-   GPIO 9 (SHD/SD2)
-   GPIO 10 (SWP/SD3)
-   GPIO 11 (CSC/CMD)
-
-   Default I2C in Arduino IDE:
-   GPIO 21 (SDA)
-   GPIO 22 (SCL)
-
-   Default SPI (VSPI):
-   GPIO 23 = MOSI
-   GPIO 19 = MISO
-   GPIO 18 = CLK
-   GPIO 5 = CS
-
-   Default SPI (HSPI):
-   GPIO 13 = MOSI
-   GPIO 12 = MISO
-   GPIO 14 = CLK
-   GPIO 15 = CS
-
-   Digital output channels:
-   DAC1 (GPIO25)
-   DAC2 (GPIO26)
-
-   Note ADC2 can't be used if WiFi is active
-
-*/
-
-#define JETPUMP_GPIO 17
 #define STATUS_GPIO 2 
-#define HEATER_GPIO 16
 #define TEMPSENSOR_GPIO 36
 #define WATERSENSOR_GPIO 39
 
@@ -98,6 +40,11 @@ byte jetPumpState = 0;
 byte circulationPumpState = 0;
 byte waterSensor = 0;
 
+uint64_t heaterStopTime = 0;             // time in microseconds to stop (RTC independant)
+uint64_t jetsStopTime = 0;               // time in microseconds to stop (RTC independant)
+const uint64_t HEATER_MAX_TIME = 7200ULL * 1000000ULL;    // 2 hours when on manual
+const uint64_t JETS_MAX_TIME = 7200ULL * 1000000ULL;       // 2 hours
+
 bool rtcManuallySet = false;
 bool apMode = false;
 char userSSID[20] = "";
@@ -107,9 +54,15 @@ char userGateway[20] = "0.0.0.0";   //xxx.xxx.xxx.xxx\0
 char userProxy[20] = "0.0.0.0";     //xxx.xxx.xxx.xxx\0
 int userUTCOffset = 43200;
 
+
+HardwareSerial MODBUS(2);
+
+
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
+  MODBUS.begin(9600, SERIAL_8N1, 16, 17);
+  //MODBUS.begin(9600, SERIAL_8N1, 5, 18);
   if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
     DBG("LittleFS Mount Failed");
     return;

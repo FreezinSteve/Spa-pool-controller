@@ -163,17 +163,17 @@ void initWebServer()
     }
     else if (param == "heater")
     {
-      heaterState = value.toInt();
+      setHeaterState(value.toInt());
       request->send_P(200, "text/plain", "OK");
     }
     else if (param == "jets")
     {
-      jetPumpState = value.toInt();
+      setJetPumpState(value.toInt());
       request->send_P(200, "text/plain", "OK");
     }
     else if (param = "auto")
     {
-      controllerState = value.toInt();
+      setControllerState(value.toInt());
       request->send_P(200, "text/plain", "OK");
     }
     else
